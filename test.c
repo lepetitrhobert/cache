@@ -28,7 +28,7 @@ unsigned int write_impl(void* v_id, void* in) {
     }
 }
 
-int compare(void* a, void* b) {
+unsigned int compare(void* a, void* b) {
     printf(" {{ %d == %d }} ", *((int*)a), *((int*)b));
     int diff = (*((int*)a) - *((int*)b));
 
@@ -57,7 +57,7 @@ int main(int argc, char** argv) {
     }
 
     printf("\n########################################################\n");
-    print_cache(cache);
+    print_cache(cache, NULL);
     printf("########################################################\n");
 
     for(i=0; i<5; i++) {
@@ -66,7 +66,7 @@ int main(int argc, char** argv) {
     }
 
     printf("\n########################################################\n");
-    print_cache(cache);
+    print_cache(cache, NULL);
     printf("########################################################\n");
 
     freeCache(cache);

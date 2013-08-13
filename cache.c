@@ -10,6 +10,22 @@
 /* ###########################################################################
                             CACHE INTERNALS
    ########################################################################### */
+
+static const unsigned char GUARD_VALUE = 0xaa;
+
+static const unsigned int ID_NOT_FOUND = ~0;
+
+struct LineHeader {
+    unsigned int   last_access_date;       /* date of the last access to this cache line. */
+    unsigned int   database_value_hash;    /* hash of the data present in the database. compared to the current data to know
+                                              if something has changed. */
+};
+
+struct LineFooter {
+    unsigned char  guard; /* the value of a guard is always set to GUARD_VALUE. if it's value is different, then it means
+                             an overflow in writing the data occured.*/
+};
+
 struct Cache {
     unsigned int   num_lines;  /* number of entries stored in cache. */
     size_t         entry_size; /* size of an entry. */
@@ -26,7 +42,7 @@ struct Cache {
 /* [1] the cache date correspounds to the last cache access and enables
    to compute the best cache line to replace in case of a miss. */
 
-unsigned int findOldestLine(struct Cache* this) {
+unsigned int findOldestLine(struct Cache* this){
     unsigned int i;
     unsigned int oldest_id = 0;
     size_t line_size = sizeof(unsigned int) + this->id_size + this->entry_size;
@@ -53,6 +69,58 @@ unsigned int findOldestLine(struct Cache* this) {
     return oldest_id;
 }
 
+
+
+// accessors to different elements of the cache line
+struct LineHeader* getHeaderAddress(struct Cache* this, unsigned int index) {
+    return (struct LineHeader*) &this->data[index * (sizeof(struct LineHeader) + this->id_size + this->entry_size + sizeof(struct LineFooter))];
+}
+
+void* getIdAddress(struct Cache* this, unsigned int index) {
+    return (void*) &this->data[index * (sizeof(struct LineHeader) + this->id_size + this->entry_size + sizeof(struct LineFooter)) + sizeof(struct LineHeader)];
+}
+
+void* getDataAddress(struct Cache* this, unsigned int index) {
+    return (void*) &this->data[index * (sizeof(struct LineHeader) + this->id_size + this->entry_size + sizeof(struct LineFooter)) + sizeof(struct LineHeader) + this->id_size];
+}
+
+struct LineFooter* getFooterAddress(struct Cache* this, unsigned int index) {
+    return (struct LineFooter*) &this->data[(index+1) * (sizeof(struct LineHeader) + this->id_size + this->entry_size + sizeof(struct LineFooter)) - sizeof(struct LineFooter)];
+}
+
+unsigned int findIdIndex(struct Cache* this, void* id) {
+    unsigned int index;
+    void* curr_id = NULL;
+    for(index=0; index<this->num_lines; index++) {
+        curr_id = getIdAddress(this, index);
+        if(this->call_cmp(curr_id, id) == EQ) {
+            return index;
+        }
+    }
+
+    return ID_NOT_FOUND;
+}
+
+unsigned int hash(void* data, size_t size) {
+    unsigned int h = 5381;
+    size_t i;
+
+    for(i=0; i<size; i++) {
+            h = ((h << 5) + h) + ((unsigned char*)data)[i];
+    }
+
+    return h;
+}
+
+void replaceLine(struct Cache* this, unsigned int index, void* id, void* data) {
+    this->call_write(getIdAddress(this, index), getDataAddress(this, index));
+    
+    getHeaderAddress(this, index)->database_value_hash = hash(data, this->entry_size);
+    memcpy(getIdAddress(this, index), id, this->id_size);
+    memcpy(getDataAddress(this, index), data, this->entry_size);
+    getFooterAddress(this, index)->guard = GUARD_VALUE;
+}
+
 void setCacheLine(struct Cache* this, unsigned int line_id, unsigned int last_hit, void* entry_id, void* entry_data) {
     void* line_start;
 
@@ -67,19 +135,7 @@ void setCacheLine(struct Cache* this, unsigned int line_id, unsigned int last_hi
 }
 
 unsigned int getLineById(struct Cache* this, void* id) {
-    unsigned int i;
-
-    printf("\tLooking for queried line in cache:\n");
-    for(i=0; i < this->num_lines; i++) {
-        printf("\t\tfound on line %d: ", i);
-        
-        if( *((unsigned int*)FIND_BLOCK(this, i)) != 0 && this->call_cmp(id, FIND_ENTRY_ID(this, i)) == 0 ) {
-            printf("true\n");
-            return i;
-        }
-        printf("false\n");
-    }
-    printf("\tLine is not present in cache.\n");
+    unsigned int i = findIdIndex(this, id);
 
     printf("Searching for data in storage...");
     if(this->call_read(id, this->buffer) == 0) {
@@ -166,21 +222,15 @@ void freeCache(struct Cache* cache) {
     }
 }
 
-void print_cache(struct Cache* t) {
+void print_cache(struct Cache* t, void (*ext_print)(void*, void*)) {
     unsigned int i;
     unsigned char* p = t->data;
     for(i=0; i<t->num_lines; i++) {
-        printf("line n.%u = {\n", i);
-        printf("\tlast_access = %u\n", *((unsigned int*)p));
-
         p+=sizeof(unsigned int);
-        printf("\tid = %u\n", *((unsigned int*)p));
         
         p+=t->id_size;
-        printf("\tvalue = %u\n", *((unsigned int*)p));
-
+        ext_print(p, p+t->entry_size);
         p+=t->entry_size;
-        printf("}\n");
     }
 }
 
