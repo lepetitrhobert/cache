@@ -68,7 +68,6 @@ void setCacheLine(struct Cache* this, unsigned int line_id, unsigned int last_hi
 
 unsigned int getLineById(struct Cache* this, void* id) {
     unsigned int i;
-    void* line = NULL;
 
     printf("\tLooking for queried line in cache:\n");
     for(i=0; i < this->num_lines; i++) {
@@ -111,13 +110,13 @@ unsigned int getLineById(struct Cache* this, void* id) {
    ########################################################################### */
 struct Cache* createCache(unsigned int num_lines, size_t entry_size, size_t id_size, ext_read reader, ext_write writer, ext_cmp comparator) {
     printf("createCache():\n");
-    printf("\tAllocating %lu byte(s) for cache structure... ", sizeof(struct Cache));
+    printf("\tAllocating %u byte(s) for cache structure... ", sizeof(struct Cache));
     struct Cache* cache = malloc(sizeof(struct Cache));
 
     if(cache != NULL) {
         printf("success.\n");
 
-        printf("\tAllocatind %lu byte(s) for cache data... ", num_lines * (sizeof(unsigned int) + id_size + entry_size));
+        printf("\tAllocatind %u byte(s) for cache data... ", num_lines * (sizeof(unsigned int) + id_size + entry_size));
         unsigned char* data = malloc(num_lines * (sizeof(unsigned int) + id_size + entry_size));
         if(data == NULL) {
             printf("failure, exiting.\n");
@@ -127,7 +126,7 @@ struct Cache* createCache(unsigned int num_lines, size_t entry_size, size_t id_s
         printf("success.\n");
         memset(data, 0, num_lines*(sizeof(unsigned int) + id_size + entry_size));
 
-        printf("\tAllocating %lu byte(s) for entry buffer... ", entry_size);
+        printf("\tAllocating %zd byte(s) for entry buffer... ", entry_size);
         unsigned char* buffer = malloc(entry_size);
         if(buffer == NULL) {
             printf("failure, exiting.\n");

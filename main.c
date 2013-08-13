@@ -30,7 +30,17 @@ unsigned int write_impl(void* v_id, void* in) {
 
 int compare(void* a, void* b) {
     printf(" {{ %d == %d }} ", *((int*)a), *((int*)b));
-    return (*((int*)a) - *((int*)b));
+    int diff = (*((int*)a) - *((int*)b));
+
+    if(diff > 0) {
+        return GT;
+    }
+    else if(diff < 0) {
+        return LT;
+    }
+    else {
+        return EQ;
+    }
 }
 
 int main(int argc, char** argv) {

@@ -8,6 +8,11 @@ typedef int (*ext_cmp)(void*, void*);
 static const unsigned int NO_ERROR        = 0;
 static const unsigned int INTERNAL_ERROR  = 1;
 static const unsigned int INVALID_ID      = 2;
+
+static const unsigned int EQ              = 0;
+static const unsigned int GT              = 1;
+static const unsigned int LT              = 2;
+
 struct Cache;
 
 /** createCache
@@ -45,8 +50,6 @@ struct Cache;
  */
 struct Cache* createCache(unsigned int, size_t, size_t, ext_read, ext_write, ext_cmp);
 
-void print_cache(struct Cache*);
-
 /** freeCache
  *  Free the memory allocated for the cache and the
  *  cache itself.
@@ -73,3 +76,13 @@ void read(struct Cache*, void*, void*);
  *  @param void*         - data.
  */
 void write(struct Cache*, void*, void*);
+
+/** print_cache
+ *  Call the ext_print function for every cache line. The ext_print
+ *  function receives a pointer to the ID and the content of a cache
+ *  line as a parameter and should print it's content.
+ *  
+ *  @param struct Cache*              - database's cache. 
+ *  @param (*ext_print)(void*, void*) - function printing the data.
+ */
+void print_cache(struct Cache*, (*ext_print)(void*, void*);
