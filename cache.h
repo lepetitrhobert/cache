@@ -3,7 +3,7 @@
 
 typedef unsigned int (*ext_read)(void*, void*);
 typedef unsigned int (*ext_write)(void*, void*);
-typedef int (*ext_cmp)(void*, void*);
+typedef unsigned int (*ext_cmp)(void*, void*);
 
 static const unsigned int NO_ERROR        = 0;
 static const unsigned int INTERNAL_ERROR  = 1;
@@ -65,7 +65,7 @@ void freeCache(struct Cache*);
  *  @param  void*         - data identifier.
  *  @param  void*         - data out.
  */
-void read(struct Cache*, void*, void*);
+unsigned int read(struct Cache*, void*, void*);
 
 /** write
  *  Write "param2" to database element identi-
@@ -75,14 +75,14 @@ void read(struct Cache*, void*, void*);
  *  @param void*         - data identifier.
  *  @param void*         - data.
  */
-void write(struct Cache*, void*, void*);
+unsigned int write(struct Cache*, void*, void*);
 
 /** print_cache
  *  Call the ext_print function for every cache line. The ext_print
  *  function receives a pointer to the ID and the content of a cache
  *  line as a parameter and should print it's content.
  *  
- *  @param struct Cache*              - database's cache. 
- *  @param (*ext_print)(void*, void*) - function printing the data.
+ *  @param struct Cache*                   - database's cache. 
+ *  @param void (*ext_print)(void*, void*) - function printing the data.
  */
-void print_cache(struct Cache*, (*ext_print)(void*, void*);
+void print_cache(struct Cache*, void (*ext_print)(void*, void*));
