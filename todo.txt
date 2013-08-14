@@ -1,0 +1,7 @@
+- order this todo list
+- implement overflow checking using the existing LineFooter.guard
+- implement database write calls optimization based on verifying if there is a difference between the checksum of the entry in the database when readed and the checksum of the entry stored in cache.
+- add a "security_flag" to the cache to disable direct access to cache data in the call_print and call_compare functions.
+- figure out a real and global error handling policy.
+- add some NULL pointer checking here and there.
+- add an ordered list of references to the cache lines' id ordered by a checksum (or something else) of the id. The ordered list would then make possible to have a faster enry fetching (from O(n) to maybe something better)
