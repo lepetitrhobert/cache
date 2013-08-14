@@ -65,7 +65,7 @@ void freeCache(struct Cache*);
  *  @param  void*         - data identifier.
  *  @param  void*         - data out.
  */
-void read(struct Cache*, void*, void*);
+unsigned int read(struct Cache*, void*, void*);
 
 /** write
  *  Write "param2" to database element identi-
@@ -75,7 +75,7 @@ void read(struct Cache*, void*, void*);
  *  @param void*         - data identifier.
  *  @param void*         - data.
  */
-void write(struct Cache*, void*, void*);
+unsigned int write(struct Cache*, void*, void*);
 
 /** print_cache
  *  Call the ext_print function for every cache line. The ext_print
