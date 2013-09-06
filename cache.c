@@ -57,7 +57,7 @@ unsigned int findOldestLine(struct Cache* this) {
     return oldestLineIndex;
 }
 
-// accessors to different elements of the cache line
+/* accessors to different elements of the cache line */
 struct LineHeader* getHeaderAddress(struct Cache* this, unsigned int index) {
     return (struct LineHeader*) &this->data[index * (sizeof(struct LineHeader) + this->id_size + this->entry_size + sizeof(struct LineFooter))];
 }
@@ -150,7 +150,7 @@ void replaceCacheLine(struct Cache* this, unsigned int index, void* id, void* en
     memcpy( getEntryAddress(this, index), entry, this->id_size);
 
     struct LineFooter* footer = getFooterAddress(this, index);
-    footer->guard = GUARD_VALUE; // TODO : add overflow checking
+    footer->guard = GUARD_VALUE; /* TODO : add overflow checking */
 }
 
 /* ###########################################################################
